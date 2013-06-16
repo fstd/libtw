@@ -5,12 +5,6 @@
 #ifndef LIBTW_TW_H
 #define LIBTW_TW_H
 
-namespace tw {
-class TW {
-public:
-	TW();
-	~TW();
-};
-};
+#include <libtw/master.h>
 
 #endif /* LIBTW_TW_H */
