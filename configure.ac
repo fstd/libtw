@@ -12,27 +12,21 @@ LT_PREREQ([2.4])
 AM_PROG_AR
 LT_INIT
 
-# Checks for programs.
-#AM_PROG_CC_C_O
-#AC_PROG_CC_C99
+#AC_LANG([C++])
 AC_PROG_CC
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
-#AC_CHECK_HEADERS([stddef.h stdlib.h string.h time.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-#AC_CHECK_HEADER_STDBOOL
-#AC_TYPE_SIZE_T
-
 AC_CHECK_LIB([srsbsns], [addr_mksocket], [], [AC_MSG_ERROR([libsrsbsns not installed?])])
 
-# Checks for library functions.
-#AC_FUNC_STRERROR_R
-#AC_CHECK_FUNCS([socket strdup])
+AC_CHECK_HEADER_STDBOOL
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 
-# Checks for header files (1).
+AC_CHECK_FUNCS([strdup])
+
 AC_CONFIG_FILES([Makefile
 		 include/Makefile
 		 include/libtw/Makefile
@@ -45,7 +39,8 @@ echo \
  ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 
  Prefix: '${prefix}'.
- Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
+ C Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
+ C++ Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
  Libraries: '${LIBS}'
 
 --------------------------------------------------"
