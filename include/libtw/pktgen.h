@@ -10,6 +10,10 @@ class PktGen {
 public:
 	PktGen();
 	virtual ~PktGen();
+
+	size_t MkConnless(unsigned char *pBuf, size_t BufSz,
+			const void *pData, size_t DataLen);
+
 };
 };
 
