@@ -5,6 +5,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cerrno>
+
+#include <err.h>
 
 extern "C" {
 #include <libsrsbsns/addr.h>
@@ -51,8 +54,18 @@ MasterComm::GetList(vector<string> & result)
 
 	for(set<pair<char*, unsigned short> >::const_iterator
 			it = msrvs_.begin(); it != msrvs_.end(); it++) {
-		fprintf(stderr, "listing '%s:%hu'\n",
+
+		int sck = addr_connect_socket_dgram(it->first, it->second);
+		if (sck < 0) {
+			warnx("could not create socket for '%s:%hu'",
+					it->first, it->second);
+			continue;
+		}
+
+		fprintf(stderr, "got a socket for '%s:%hu'\n",
 				it->first, it->second);
+
+		close(sck);
 	}
 }
 
