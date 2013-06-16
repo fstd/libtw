@@ -7,16 +7,18 @@
 
 #include <vector>
 #include <set>
+#include <utility>
 #include <string>
 
 using std::vector;
 using std::set;
+using std::pair;
 using std::string;
 
 namespace tw {
 class MasterComm {
 private:
-	set<string> msrvs_;
+	set<pair<char*, unsigned short> > msrvs_;
 
 public:
 	MasterComm();
