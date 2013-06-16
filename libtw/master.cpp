@@ -18,7 +18,8 @@ extern "C" {
 namespace tw {
 
 MasterComm::MasterComm()
-: msrvs_()
+: msrvs_(),
+  numtries_(2)
 {
 }
 
@@ -62,11 +63,39 @@ MasterComm::GetList(vector<string> & result)
 			continue;
 		}
 
-		fprintf(stderr, "got a socket for '%s:%hu'\n",
+		int cnt = FetchCount(sck, numtries_);
+
+		if (cnt <= 0) {
+			warnx("could not get server count from '%s:%hu'",
+					it->first, it->second);
+			continue;
+		}
+	
+		cnt = FetchList(sck, numtries_, result);
+
+		if (cnt <= 0) {
+			warnx("could not get server list from '%s:%hu'",
+					it->first, it->second);
+			continue;
+		}
+
+		fprintf(stderr, "got %d servers from '%s:%hu'\n", cnt,
 				it->first, it->second);
 
 		close(sck);
 	}
+}
+
+int
+MasterComm::FetchCount(int sck, int numtries)
+{
+	return -1;
+}
+
+int
+MasterComm::FetchList(int sck, int numtries, vector<string> & result)
+{
+	return -1;
 }
 
 };

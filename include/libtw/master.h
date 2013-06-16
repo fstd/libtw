@@ -19,6 +19,10 @@ namespace tw {
 class MasterComm {
 private:
 	set<pair<char*, unsigned short> > msrvs_;
+	int numtries_;
+
+	int FetchCount(int sck, int numtries);
+	int FetchList(int sck, int numtries, vector<string> & result);
 
 public:
 	MasterComm();
