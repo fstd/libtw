@@ -2,13 +2,15 @@
  * libtw - uhm
   * See README for contact-, COPYING for license information.  */
 
+#include <vector>
+#include <string>
 #include <cstdlib>
 
-#include <libtw/tw.h>
+#include <libtw/master.h>
 
 int
 main(int argc, char **argv)
 {
-	tw::TW t;
+	tw::MasterComm m;
 	return EXIT_SUCCESS;
 }

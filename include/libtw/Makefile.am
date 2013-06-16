@@ -1,1 +1,1 @@
-pkginclude_HEADERS = tw.h
+pkginclude_HEADERS = tw.h master.h

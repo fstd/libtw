@@ -5,18 +5,26 @@
 #ifndef LIBTW_MASTER_H
 #define LIBTW_MASTER_H
 
+#include <vector>
+#include <string>
+
+using std::vector;
+using std::string;
+
 namespace tw {
 class MasterComm {
 public:
+	MasterComm();
+	virtual ~MasterComm();
+
 	/* set master servers, format: "host:port" (host can be FQDN,
 	 * IPv4 or [IPv6] address) */
-	virtual void MasterComm::SetMasters(vector<string> const& masters) = 0;
+	void SetMasters(vector<string> const& masters);
 
 	/* retrieve list from (all) masters, putting them into
 	 * the supplied vector ,,result'' */
-	virtual void MasterComm::GetList(vector<string> & result) = 0;
+	void GetList(vector<string> & result);
 
-	virtual ~MasterComm();
 };
 };
 
