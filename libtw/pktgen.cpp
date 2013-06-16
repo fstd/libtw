@@ -2,6 +2,10 @@
  * libtw - uhm
   * See README for contact-, COPYING for license information.  */
 
+#include <cstring>
+
+#include <err.h>
+
 #include <libtw/pktgen.h>
 
 namespace tw {
@@ -23,7 +27,7 @@ PktGen::MkConnless(unsigned char *pBuf, size_t BufSz,
 		return 0;
 	}
 
-	mem_copy(pBuf+6, pData, DataLen);
+	memcpy(pBuf+6, pData, DataLen);
 	for(size_t i = 0; i < 6; i++)
 		pBuf[i] = 0xff;
 

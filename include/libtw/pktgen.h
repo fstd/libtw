@@ -5,6 +5,8 @@
 #ifndef LIBTW_PKTGEN_H
 #define LIBTW_PKTGEN_H
 
+#include <cstddef>
+
 namespace tw {
 class PktGen {
 public:
