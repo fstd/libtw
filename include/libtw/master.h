@@ -6,13 +6,18 @@
 #define LIBTW_MASTER_H
 
 #include <vector>
+#include <set>
 #include <string>
 
 using std::vector;
+using std::set;
 using std::string;
 
 namespace tw {
 class MasterComm {
+private:
+	set<string> msrvs_;
+
 public:
 	MasterComm();
 	virtual ~MasterComm();

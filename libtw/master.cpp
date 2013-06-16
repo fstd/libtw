@@ -9,6 +9,7 @@
 namespace tw {
 
 MasterComm::MasterComm()
+: msrvs_()
 {
 }
 
@@ -19,11 +20,18 @@ MasterComm::~MasterComm()
 void
 MasterComm::SetMasters(vector<string> const& masters)
 {
+	for(vector<string>::const_iterator it = masters.begin();
+			it != masters.end(); it++)
+		msrvs_.insert(*it);
 }
 
 void
 MasterComm::GetList(vector<string> & result)
 {
+	if (msrvs_.size() == 0)
+		return;
+	
+	//...
 }
 
 };
