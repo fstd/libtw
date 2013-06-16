@@ -20,9 +20,11 @@ class MasterComm {
 private:
 	set<pair<char*, unsigned short> > msrvs_;
 	int numtries_;
+	unsigned long to_;
 
-	int FetchCount(int sck, int numtries);
-	int FetchList(int sck, int numtries, vector<string> & result);
+	int FetchCount(int sck, int numtries, unsigned long to_us);
+	int FetchList(int sck, int numtries, vector<string> & result,
+			unsigned long to_us);
 
 public:
 	MasterComm();

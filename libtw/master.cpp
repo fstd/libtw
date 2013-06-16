@@ -19,7 +19,8 @@ namespace tw {
 
 MasterComm::MasterComm()
 : msrvs_(),
-  numtries_(2)
+  numtries_(2),
+  to_(500000)
 {
 }
 
@@ -63,7 +64,7 @@ MasterComm::GetList(vector<string> & result)
 			continue;
 		}
 
-		int cnt = FetchCount(sck, numtries_);
+		int cnt = FetchCount(sck, numtries_, to_);
 
 		if (cnt <= 0) {
 			warnx("could not get server count from '%s:%hu'",
@@ -71,7 +72,7 @@ MasterComm::GetList(vector<string> & result)
 			continue;
 		}
 	
-		cnt = FetchList(sck, numtries_, result);
+		cnt = FetchList(sck, numtries_, result, to_);
 
 		if (cnt <= 0) {
 			warnx("could not get server list from '%s:%hu'",
@@ -87,13 +88,14 @@ MasterComm::GetList(vector<string> & result)
 }
 
 int
-MasterComm::FetchCount(int sck, int numtries)
+MasterComm::FetchCount(int sck, int numtries, unsigned long to_us)
 {
 	return -1;
 }
 
 int
-MasterComm::FetchList(int sck, int numtries, vector<string> & result)
+MasterComm::FetchList(int sck, int numtries, vector<string> & result,
+		unsigned long to_us)
 {
 	return -1;
 }
