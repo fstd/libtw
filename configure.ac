@@ -26,6 +26,8 @@ AC_PROG_MAKE_SET
 #AC_CHECK_HEADER_STDBOOL
 #AC_TYPE_SIZE_T
 
+AC_CHECK_LIB([srsbsns], [addr_mksocket], [], [AC_MSG_ERROR([libsrsbsns not installed?])])
+
 # Checks for library functions.
 #AC_FUNC_STRERROR_R
 #AC_CHECK_FUNCS([socket strdup])
