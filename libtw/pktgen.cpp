@@ -34,4 +34,41 @@ PktGen::MkConnless(unsigned char *pBuf, size_t BufSz,
 	return DataLen+6;
 }
 
+
+bool
+PktGen::IsConnless(unsigned char *pk, size_t pklen) const
+{
+	return false;
+}
+
+bool
+PktGen::IsControl(unsigned char *pk, size_t pklen) const
+{
+	return false;
+}
+
+bool
+PktGen::IsSystem(unsigned char *pk, size_t pklen) const
+{
+	return false;
+}
+
+int
+PktGen::IdentifyConnless(unsigned char *pk, size_t pklen) const
+{
+	return -1;
+}
+
+int
+PktGen::IdentifyControl(unsigned char *pk, size_t pklen) const
+{
+	return -1;
+}
+
+int
+PktGen::IdentifyRegular(unsigned char *pk, size_t pklen) const
+{
+	return -1;
+}
+
 };
