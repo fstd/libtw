@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <cstdio>
 #include <cstdlib>
 
 #include <libtw/master.h>
@@ -11,16 +12,26 @@
 int
 main(int argc, char **argv)
 {
+	vector<string> masters;
+
+	masters.push_back("master1.teeworlds.com");
+	masters.push_back("master2.teeworlds.com");
+	masters.push_back("master3.teeworlds.com");
+	masters.push_back("master4.teeworlds.com");
+
 	tw::MasterComm m;
-	vector<string> v;
-	v.push_back("example.org");
-	v.push_back("example.org:1337");
-	v.push_back("1.23.45.123");
-	v.push_back("1.23.45.123:12345");
-	v.push_back("[aa:bb:cc::ff]");
-	v.push_back("[aa:bb:cc::ff]:5");
-	m.SetMasters(v);
-	vector<string> r;
-	m.GetList(r);
+	m.SetMasters(masters);
+
+	vector<string> result;
+	m.GetList(result);
+
+	fprintf(stderr, "got %zu servers:\n", result.size());
+
+	for(vector<string>::const_iterator it = result.begin();
+			it != result.end(); it++)
+		fprintf(stderr, "\t'%s'\n", it->c_str());
+	
+	fprintf(stderr, "bye\n");
+
 	return EXIT_SUCCESS;
 }
