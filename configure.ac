@@ -22,10 +22,13 @@ AC_PROG_MAKE_SET
 AC_CHECK_LIB([srsbsns], [addr_mksocket], [], [AC_MSG_ERROR([libsrsbsns not installed?])])
 
 AC_CHECK_HEADER_STDBOOL
+AC_CHECK_HEADERS([arpa/inet.h sys/socket.h sys/time.h])
+
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
+AC_TYPE_UINT64_T
 
-AC_CHECK_FUNCS([strdup])
+AC_CHECK_FUNCS([strdup gettimeofday])
 
 AC_CONFIG_FILES([Makefile
 		 include/Makefile
