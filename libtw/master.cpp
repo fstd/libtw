@@ -80,7 +80,7 @@ MasterComm::GetList(vector<string> & result)
 
 		cnt = FetchList(sck, numtries_, cnt, result, to_);
 
-		if (cnt <= 0) {
+		if (cnt < 0) {
 			warnx("could not get server list from '%s:%hu'",
 					it->first, it->second);
 			close(sck);
