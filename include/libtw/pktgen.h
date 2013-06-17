@@ -5,6 +5,9 @@
 #ifndef LIBTW_PKTGEN_H
 #define LIBTW_PKTGEN_H
 
+#include <vector>
+#include <string>
+
 #include <cstddef>
 #define Y(A...) A
 
@@ -40,6 +43,9 @@ enum EClPkts {
 };
 #undef X
 
+using std::vector;
+using std::string;
+
 class PktGen {
 public:
 	PktGen();
@@ -67,6 +73,12 @@ public:
 	int IdentifyRegular(unsigned char *pk, size_t pklen) const;
 
 	const char *NameConnless(EClPkts typ) const;
+
+	bool ParseConnless_SB_COUNT(unsigned char *pk, size_t pklen,
+			size_t *out_srvcnt) const;
+
+	bool ParseConnless_SB_LIST(unsigned char *pk, size_t pklen,
+			vector<string> & result) const;
 
 };
 

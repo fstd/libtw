@@ -10,6 +10,8 @@
 #include <utility>
 #include <string>
 
+#include <libtw/pktgen.h>
+
 using std::vector;
 using std::set;
 using std::pair;
@@ -20,11 +22,15 @@ class MasterComm {
 private:
 	set<pair<char*, unsigned short> > msrvs_;
 	int numtries_;
-	unsigned long to_;
+	uint64_t to_;
 
-	int FetchCount(int sck, int numtries, unsigned long to_us);
-	int FetchList(int sck, int numtries, vector<string> & result,
-			unsigned long to_us);
+	PktGen pg_;
+
+	int FetchCount(int sck, int numtries, uint64_t to_us);
+	int FetchList(int sck, int numtries, int num_expected,
+			vector<string> & result, uint64_t to_us);
+	int TryFetchList(int sck, int num_expected,
+			vector<string> & result, uint64_t to_us);
 
 public:
 	MasterComm();

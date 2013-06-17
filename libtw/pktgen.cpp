@@ -2,10 +2,9 @@
  * libtw - uhm
   * See README for contact-, COPYING for license information.  */
 
-#include <initializer_list>
-
 #include <cstring>
 
+#include <arpa/inet.h>
 #include <err.h>
 
 #include <libtw/pktgen.h>
@@ -113,6 +112,58 @@ const char*
 PktGen::NameConnless(EClPkts typ) const
 {
 	return clpkt_names[typ];
+}
+
+bool
+PktGen::ParseConnless_SB_COUNT(unsigned char *pk, size_t pklen,
+			size_t *out_srvcnt) const
+{
+	if (pklen < 6+8+2)
+		return false;
+	
+	*out_srvcnt = pk[14]*256 + pk[15];
+	return true;
+}
+
+bool
+PktGen::ParseConnless_SB_LIST(unsigned char *pk, size_t pklen,
+		vector<string> & result) const
+{
+	if (pklen < 6+8)
+		return false;
+	
+	if ((pklen-(6+8)) % 18 != 0) {
+		warnx("odd SB_LIST packet length: '%zu' (with header)",
+				pklen);
+		return -1;
+	}
+
+	unsigned char ip4map[] = {0x00, 0x00, 0x00, 0x00,
+	                          0x00, 0x00, 0x00, 0x00,
+	                          0x00, 0x00, 0xff, 0xff};
+
+	for(size_t i = 6+8; i < pklen; i += 18) {
+		bool ip4 = memcmp(pk+i, ip4map, sizeof ip4map) == 0;
+		char addr[48] = {0};
+		errno = 0;
+		if (!inet_ntop(ip4?AF_INET:AF_INET6, pk+i+(ip4?12:0),
+				addr + (ip4?0:1), sizeof addr - (ip4?0:1))){
+			warn("inet_ntop");
+			continue;
+		}
+
+		if (!ip4) {
+			addr[0] = '[';
+			addr[strlen(addr)] = ']';
+		}
+
+		unsigned short port = (pk[i+16]*256) + pk[i+17];
+		sprintf(addr+strlen(addr), ":%hu", port);
+
+		result.push_back(string(addr));
+	}
+
+	return true;
 }
 
 };

@@ -3,7 +3,7 @@
   * See README for contact-, COPYING for license information.  */
 
 #ifndef LIBTW_TW_H
-#define LIBTW_TW_H
+#define LIBTW_TW_H 1
 
 #include <libtw/master.h>
 

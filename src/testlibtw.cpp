@@ -14,10 +14,10 @@ main(int argc, char **argv)
 {
 	vector<string> masters;
 
-	masters.push_back("master1.teeworlds.com");
-	masters.push_back("master2.teeworlds.com");
+	//masters.push_back("master1.teeworlds.com");
+	//masters.push_back("master2.teeworlds.com");
 	masters.push_back("master3.teeworlds.com");
-	masters.push_back("master4.teeworlds.com");
+	//masters.push_back("master4.teeworlds.com");
 
 	tw::MasterComm m;
 	m.SetMasters(masters);
