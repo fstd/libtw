@@ -31,10 +31,6 @@ MasterComm::MasterComm()
 {
 }
 
-MasterComm::~MasterComm()
-{
-}
-
 void
 MasterComm::SetMasters(vector<string> const& masters)
 {

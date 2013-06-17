@@ -34,7 +34,6 @@ private:
 
 public:
 	MasterComm();
-	virtual ~MasterComm();
 
 	/* set master servers, format: "host:port" (host can be FQDN,
 	 * IPv4 or [IPv6] address) */
