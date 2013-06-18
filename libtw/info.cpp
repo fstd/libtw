@@ -7,7 +7,24 @@
 namespace tw {
 
 InfoComm::InfoComm()
+: infomap_()
 {
+}
+
+void
+InfoComm::SetServers(vector<string> const& srvs)
+{
+	infomap_.clear();
+
+	for(vector<string>::const_iterator it = srvs.begin();
+			it != srvs.end(); it++)
+		infomap_[*it].tlast_ = 0;
+}
+
+int
+InfoComm::Refresh()
+{
+	return 0;
 }
 
 };
