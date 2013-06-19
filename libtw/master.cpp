@@ -107,7 +107,7 @@ MasterComm::FetchCount(int sck, int numtries, uint64_t to_us)
 		}
 
 		unsigned char buf[128];
-		r = Util::Recv(sck, buf, sizeof buf, to_us);
+		r = Util::Recv(sck, buf, sizeof buf, to_us, 10000);
 
 		if (r <= 0)
 			continue;
