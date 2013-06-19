@@ -9,6 +9,8 @@
 #include <vector>
 #include <map>
 
+#include <libtw/pktgen.h>
+
 using std::string;
 using std::vector;
 using std::map;
@@ -19,6 +21,13 @@ struct ServerInfo;
 class InfoComm {
 private:
 	map<string, ServerInfo> infomap_;
+	PktGen pg_;
+	unsigned char tok_;
+	uint64_t to_;
+
+	int RefreshChunk(int sck, unsigned char tok,
+			vector<string>::const_iterator start,
+			size_t num);
 
 
 public:
@@ -44,7 +53,9 @@ struct ServerInfo {
 	int maxp_;
 	int lat_;
 
-	uint64_t tlast_;
+	bool on_;
+	uint64_t tsend_;
+	uint64_t trecv_;
 };
 
 };
