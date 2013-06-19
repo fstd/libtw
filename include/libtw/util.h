@@ -13,7 +13,9 @@ class Util {
 public:
 	static uint64_t tstamp();
 
-	static ssize_t Recv(int sck, void *buf, size_t len, uint64_t to_us);
+	static ssize_t Recv(int sck, void *buf, size_t len, uint64_t to_us,
+			int sleep_us = 10000, char *from = NULL,
+			size_t fromsz = 0);
 };
 
 };
