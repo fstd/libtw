@@ -71,4 +71,20 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 	return 0;
 }
 
+void
+Util::strNcat(char *dest, const char *src, size_t destsz)
+{
+	size_t len = strlen(dest);
+	if (len + 1 >= destsz)
+		return;
+
+	size_t rem = destsz - (len + 1);
+
+	char *ptr = dest + len;
+	while(rem-- && *src) {
+		*ptr++ = *src++;
+	}
+	*ptr = '\0';
+}
+
 };
