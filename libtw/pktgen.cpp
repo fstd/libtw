@@ -60,6 +60,13 @@ PktGen::MkConnless(unsigned char *buf, size_t bufsz, EClPkts typ,
 }
 
 
+size_t
+PktGen::MkConnless_SB_GETINFO(unsigned char *pBuf, size_t BufSz,
+		unsigned char token)
+{
+	return MkConnless(pBuf, BufSz, SB_GETINFO, &token, 1);
+}
+
 bool
 PktGen::IsConnless(unsigned char *pk, size_t pklen) const
 {

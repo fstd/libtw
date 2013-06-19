@@ -54,6 +54,9 @@ public:
 	size_t MkConnless(unsigned char *pBuf, size_t BufSz, EClPkts typ,
 			const void *pData, size_t DataLen);
 
+	size_t MkConnless_SB_GETINFO(unsigned char *pBuf, size_t BufSz,
+			unsigned char token);
+
 	/* tell apart connless from regular packets */
 	bool IsConnless(unsigned char *pk, size_t pklen) const;
 
