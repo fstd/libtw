@@ -53,15 +53,28 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 			continue;
 		}
 
+		unsigned short port = 0;
+
 		if (from && sa.ss_family == AF_INET6) {
 			inet_ntop(AF_INET6,
 					&((sockaddr_in6*)&sa)->sin6_addr,
-					from, fromsz);
+					from+1, fromsz-1);
+			from[0] = '[';
+			from[strlen(from)+1] = '\0'; //XXX
+			from[strlen(from)] = ']';
+			port = ntohs(((sockaddr_in6*)&sa)->sin6_port);
 		} else if (from && sa.ss_family == AF_INET) {
 			inet_ntop(AF_INET, &((sockaddr_in*)&sa)->sin_addr,
 					from, fromsz);
+			port = ntohs(((sockaddr_in*)&sa)->sin_port);
 		} else if (from)
 			warnx("wut?");
+
+		if (from) {
+			char portstr[7];
+			snprintf(portstr, sizeof portstr, ":%hu", port);
+			Util::strNcat(from, portstr, fromsz);
+		}
 
 		return r;
 
