@@ -38,6 +38,15 @@ main(int argc, char **argv)
 
 	fprintf(stderr, "refreshed %d servers (of %zu)\n",
 			suc, result.size());
+
+	for(map<string, tw::ServerInfo>::const_iterator
+			it = i.GetAll().begin();
+			it != i.GetAll().end(); it++) {
+		if (it->second.on_) {
+			it->second.Dump();
+		}
+	}
+
 	fprintf(stderr, "bye\n");
 
 	return EXIT_SUCCESS;

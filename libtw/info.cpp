@@ -21,7 +21,7 @@ InfoComm::InfoComm()
 : infomap_(),
   pg_(),
   tok_(0),
-  to_(1000000)
+  to_(500000)
 {
 }
 
@@ -146,7 +146,6 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		}
 
 		if (!pg_.ParseConnless_SB_INFO(buf, r, info)) {
-			warnx("failed to parse SB_INFO packet");
 			continue;
 		}
 

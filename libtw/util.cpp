@@ -80,7 +80,6 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 		return r;
 
 	}
-	warnx("timeout");
 
 	return 0;
 }

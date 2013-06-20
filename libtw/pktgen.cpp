@@ -213,7 +213,9 @@ PktGen::ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
 		bool player = (bool)strtol(Up.GetString(), NULL, 0);
 
 		if (Up.Error()) {
-			warnx("failed to parse %d", i);
+			warnx("failed to parse for '%s' (%d)",
+					out_info->addr_.c_str(), i);
+			Util::hexdump(pk, pklen, "errorneous SB_INFO");
 			return false;
 		}
 
