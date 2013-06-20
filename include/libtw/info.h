@@ -41,21 +41,47 @@ public:
 	int Refresh();
 };
 
+
+struct PlayerInfo {
+	string name_;
+	string clan_;
+	int country_;
+	int score_;
+	bool player_;
+
+	PlayerInfo(string const& name, string const& clan, int country,
+			int score, bool player)
+	: name_(name),
+	  clan_(clan),
+	  country_(country),
+	  score_(score),
+	  player_(player)
+	{
+	}
+
+	void Dump() const;
+
+};
+
 struct ServerInfo {
 	string addr_;
 	string name_;
 	string mod_;
 	string map_;
 	string ver_;
+	int flg_;
 	int numc_;
 	int maxc_;
 	int nump_;
 	int maxp_;
-	int lat_;
 
 	bool on_;
 	uint64_t tsend_;
 	uint64_t trecv_;
+
+	vector<PlayerInfo> clt_;
+
+	void Dump() const;
 };
 
 };

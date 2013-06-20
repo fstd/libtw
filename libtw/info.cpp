@@ -32,6 +32,7 @@ InfoComm::SetServers(vector<string> const& srvs)
 
 	for(vector<string>::const_iterator it = srvs.begin();
 			it != srvs.end(); it++) {
+		infomap_[*it].addr_ = *it;
 		infomap_[*it].tsend_ = infomap_[*it].trecv_ = 0;
 		infomap_[*it].on_ = false;
 	}
@@ -104,19 +105,78 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 
 	for(;;) {
 		char from[128] = {0};
-		char buf[4096];
+		unsigned char buf[2048];
 		ssize_t r = Util::Recv(sck, buf, sizeof buf, to_, 1000,
 				from, sizeof from);
 
 		if (r <= 0)
 			break;
 
-		warnx("received %zd bytes from '%s'", r, from);
-		suc++;
+		uint64_t trecv = Util::tstamp();
 
+		//warnx("received %zd bytes from '%s'", r, from);
+
+		if (!pg_.IsConnless(buf, r)) {
+			warnx("not a connless packet");
+			continue;
+		}
+
+		EClPkts typ = pg_.IdentifyConnless(buf, r);
+
+		if (typ != SB_INFO) {
+			warnx("unexpected reply '%s'",
+					pg_.NameConnless(typ));
+			continue;
+		}
+
+		if (!infomap_.count(from)) {
+			warnx("reply from '%s' whom we don't know!", from);
+			continue;
+		}
+
+		ServerInfo *info = &infomap_[from];
+
+		CUnpacker Up; //peek inside
+		Up.Reset(buf+6+8, r - (6+8));
+		int tk = (int)strtol(Up.GetString(), NULL, 10);
+
+		if (tk != tok) {
+			warnx("wrong token");
+			continue;
+		}
+
+		if (!pg_.ParseConnless_SB_INFO(buf, r, info)) {
+			warnx("failed to parse SB_INFO packet");
+			continue;
+		}
+
+		info->trecv_ = trecv;
+		info->on_ = true;
+
+		suc++;
 	}
+
 	return suc;
 }
 
+void ServerInfo::Dump() const
+{
+	fprintf(stderr, "[%s %s %s %s '%s' 0x%x %d/%d %d/%d]\n",
+			addr_.c_str(), ver_.c_str(), mod_.c_str(),
+			map_.c_str(), name_.c_str(), flg_, numc_, maxc_,
+			nump_, maxp_);
+	for(vector<PlayerInfo>::const_iterator it = clt_.begin();
+			it != clt_.end(); it++) {
+		it->Dump();
 
+	}
+
+}
+
+void PlayerInfo::Dump() const
+{
+	fprintf(stderr, "\t%s'%s' (%s) %d %d\n", player_?"":"(spec) ",
+			name_.c_str(), clan_.c_str(), country_, score_);
+
+}
 };

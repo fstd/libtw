@@ -46,6 +46,8 @@ enum EClPkts {
 using std::vector;
 using std::string;
 
+struct ServerInfo;
+
 class PktGen {
 public:
 	PktGen();
@@ -82,6 +84,10 @@ public:
 
 	bool ParseConnless_SB_LIST(unsigned char *pk, size_t pklen,
 			vector<string> & result) const;
+
+	bool ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
+			ServerInfo *out_info) const;
+
 
 };
 

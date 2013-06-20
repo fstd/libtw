@@ -7,6 +7,8 @@
 #include <arpa/inet.h>
 #include <err.h>
 
+#include <libtw/info.h>
+#include <libtw/util.h>
 #include <libtw/pktgen.h>
 
 namespace tw {
@@ -172,6 +174,62 @@ PktGen::ParseConnless_SB_LIST(unsigned char *pk, size_t pklen,
 
 	return true;
 }
+
+bool
+PktGen::ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
+		ServerInfo *out_info) const
+{
+	CUnpacker Up;
+	Up.Reset(pk+6+8, pklen - (6+8));
+	//addr_ = Up.GetString();
+
+	if (out_info->addr_ == "42.96.155.102:25000")
+	{
+	fprintf(stderr, "sup\n");
+	}
+
+	(void)Up.GetString(); //we did the token already
+	out_info->ver_ = Up.GetString();
+	if (strncmp(out_info->ver_.c_str(), "0.6", 3) != 0) {
+		warnx("wrong version (%s)", out_info->ver_.c_str());
+		return false;
+	}
+
+	out_info->name_ = Up.GetString();
+	out_info->map_ = Up.GetString();
+	out_info->mod_ = Up.GetString();
+	out_info->flg_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->nump_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->maxp_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->numc_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->maxc_ = (int)strtol(Up.GetString(), NULL, 10);
+
+	if (Up.Error()) {
+		warnx("failed to parse for '%s'", out_info->addr_.c_str());
+		Util::hexdump(pk, pklen, "errorneous SB_INFO");
+		return false;
+	}
+
+	for(int i = 0; i < out_info->numc_; i++)
+	{
+		string name(Up.GetString());
+		string clan(Up.GetString());
+		int country = (int)strtol(Up.GetString(), NULL, 0);
+		int score = (int)strtol(Up.GetString(), NULL, 0);
+		bool player = (bool)strtol(Up.GetString(), NULL, 0);
+
+		if (Up.Error()) {
+			warnx("failed to parse %d", i);
+			return false;
+		}
+
+		out_info->clt_.push_back(PlayerInfo(name, clan, country,
+				score, player));
+	}
+
+	return true;
+}
+
 
 /* This is cuntpasted from Teeworlds and somewhat mangled,
  * but originally (c) Magnus Auvinen; see README for details */
