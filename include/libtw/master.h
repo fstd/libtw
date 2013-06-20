@@ -10,6 +10,8 @@
 #include <utility>
 #include <string>
 
+#include <cstdint>
+
 #include <libtw/pktgen.h>
 
 using std::vector;
