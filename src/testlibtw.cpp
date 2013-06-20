@@ -36,10 +36,8 @@ main(int argc, char **argv)
 	i.SetServers(result);
 	int suc = i.Refresh();
 
-	fprintf(stderr, "refreshed %d servers (of %zu)\n", suc, result.size());
-
-
-
+	fprintf(stderr, "refreshed %d servers (of %zu)\n",
+			suc, result.size());
 	fprintf(stderr, "bye\n");
 
 	return EXIT_SUCCESS;

@@ -129,7 +129,7 @@ PktGen::ParseConnless_SB_COUNT(unsigned char *pk, size_t pklen,
 {
 	if (pklen < 6+8+2)
 		return false;
-	
+
 	*out_srvcnt = pk[14]*256 + pk[15];
 	return true;
 }
@@ -140,7 +140,7 @@ PktGen::ParseConnless_SB_LIST(unsigned char *pk, size_t pklen,
 {
 	if (pklen < 6+8)
 		return false;
-	
+
 	if ((pklen-(6+8)) % 18 != 0) {
 		warnx("odd SB_LIST packet length: '%zu' (with header)",
 				pklen);

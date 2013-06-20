@@ -37,7 +37,7 @@ MasterComm::SetMasters(vector<string> const& masters)
 	for(set<pair<char*, unsigned short> >::const_iterator
 			it = msrvs_.begin(); it != msrvs_.end(); it++)
 		free(it->first);
-	
+
 	msrvs_.clear();
 
 	for(vector<string>::const_iterator it = masters.begin();
@@ -55,7 +55,7 @@ MasterComm::GetList(vector<string> & result)
 {
 	if (msrvs_.size() == 0)
 		return;
-	
+
 	int sck = -1;
 
 	for(set<pair<char*, unsigned short> >::const_iterator
