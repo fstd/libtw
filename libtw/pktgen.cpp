@@ -181,12 +181,6 @@ PktGen::ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
 {
 	CUnpacker Up;
 	Up.Reset(pk+6+8, pklen - (6+8));
-	//addr_ = Up.GetString();
-
-	if (out_info->addr_ == "42.96.155.102:25000")
-	{
-	fprintf(stderr, "sup\n");
-	}
 
 	(void)Up.GetString(); //we did the token already
 	out_info->ver_ = Up.GetString();
