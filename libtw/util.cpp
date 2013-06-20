@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstring>
 #include <cerrno>
+#include <cctype>
 #include <sys/time.h>
 
 #include <sys/types.h>
@@ -98,6 +99,63 @@ Util::strNcat(char *dest, const char *src, size_t destsz)
 		*ptr++ = *src++;
 	}
 	*ptr = '\0';
+}
+
+/*not-quite-ravomavain's h4xdump*/
+void
+Util::hexdump(const void *pAddressIn, long lSize, const char *name)
+{
+	char szBuf[100];
+	long lIndent = 1;
+	long lOutLen, lIndex, lIndex2, lOutLen2;
+	long lRelPos;
+	struct { char *pData; unsigned long lSize; } buf;
+	unsigned char *pTmp,ucTmp;
+	unsigned char *pAddress = (unsigned char *)pAddressIn;
+
+	buf.pData   = (char *)pAddress;
+	buf.lSize   = lSize;
+	fprintf(stderr, "hexdump '%s'\n", name);
+
+	while (buf.lSize > 0)
+	{
+		pTmp     = (unsigned char *)buf.pData;
+		lOutLen  = (int)buf.lSize;
+		if (lOutLen > 16)
+			lOutLen = 16;
+
+		/* create a 64-character formatted output line: */
+		sprintf(szBuf, " |                            "
+				"                      "
+				"    %08lX", (long unsigned int)(pTmp-pAddress));
+		lOutLen2 = lOutLen;
+
+		for(lIndex = 1+lIndent, lIndex2 = 53-15+lIndent, lRelPos = 0;
+				lOutLen2;
+				lOutLen2--, lIndex += 2, lIndex2++
+		   )
+		{
+			ucTmp = *pTmp++;
+
+			sprintf(szBuf + lIndex, "%02X ", (unsigned short)ucTmp);
+			if(!isprint(ucTmp))  ucTmp = '.'; /* nonprintable char */
+			szBuf[lIndex2] = ucTmp;
+
+			if (!(++lRelPos & 3))     /* extra blank after 4 bytes */
+			{  lIndex++; szBuf[lIndex+2] = ' '; }
+		}
+
+		if (!(lRelPos & 3)) lIndex--;
+
+		szBuf[lIndex  ]   = '|';
+		szBuf[lIndex+1]   = ' ';
+
+		fprintf(stderr, "%s\n", szBuf);
+
+		buf.pData   += lOutLen;
+		buf.lSize   -= lOutLen;
+	}
+	fprintf(stderr, "end of hexdump '%s'\n", name);
 }
 
 };

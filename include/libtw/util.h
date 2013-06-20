@@ -18,6 +18,8 @@ public:
 			size_t fromsz = 0);
 
 	static void strNcat(char *dest, const char *src, size_t destsz);
+	static void hexdump(const void *pAddressIn, long lSize,
+			const char *name);
 };
 
 };
