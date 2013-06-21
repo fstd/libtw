@@ -3,7 +3,7 @@
   * See README for contact-, COPYING for license information.  */
 
 #ifndef LIBTW_MASTER_H
-#define LIBTW_MASTER_H
+#define LIBTW_MASTER_H 1
 
 #include <vector>
 #include <set>
@@ -12,7 +12,7 @@
 
 #include <cstdint>
 
-#include <libtw/pktgen.h>
+#include <libtw/proto_connless.h>
 
 using std::vector;
 using std::set;
@@ -26,7 +26,7 @@ private:
 	int numtries_;
 	uint64_t to_;
 
-	PktGen pg_;
+	ConnlessProtoUnit pg_;
 
 	int FetchCount(int sck, int numtries, uint64_t to_us);
 	int FetchList(int sck, int numtries, int num_expected,

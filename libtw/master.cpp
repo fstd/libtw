@@ -15,6 +15,8 @@ extern "C" {
 #include <libsrsbsns/addr.h>
 }
 
+#include "debug.h"
+
 #include <libtw/util.h>
 #include <libtw/master.h>
 
@@ -24,10 +26,7 @@ extern "C" {
 namespace tw {
 
 MasterComm::MasterComm()
-: msrvs_(),
-  numtries_(2),
-  to_(500000),
-  pg_()
+: msrvs_(), numtries_(2), to_(500000), pg_()
 {
 }
 
@@ -63,7 +62,7 @@ MasterComm::GetList(vector<string> & result)
 
 		sck = addr_connect_socket_dgram(it->first, it->second);
 		if (sck < 0) {
-			warnx("could not create socket for '%s:%hu'",
+			WX("could not create socket for '%s:%hu'",
 					it->first, it->second);
 			close(sck);
 			continue;
@@ -72,7 +71,7 @@ MasterComm::GetList(vector<string> & result)
 		int cnt = FetchCount(sck, numtries_, to_);
 
 		if (cnt <= 0) {
-			warnx("could not get server count from '%s:%hu'",
+			WX("could not get server count from '%s:%hu'",
 					it->first, it->second);
 			close(sck);
 			continue;
@@ -81,7 +80,7 @@ MasterComm::GetList(vector<string> & result)
 		cnt = FetchList(sck, numtries_, cnt, result, to_);
 
 		if (cnt < 0) {
-			warnx("could not get server list from '%s:%hu'",
+			WX("could not get server list from '%s:%hu'",
 					it->first, it->second);
 			close(sck);
 			continue;
@@ -99,10 +98,9 @@ MasterComm::FetchCount(int sck, int numtries, uint64_t to_us)
 	size_t sz = pg_.MkConnless(pk, sizeof pk, SB_GETCOUNT, NULL, 0);
 
 	while(numtries--) {
-		errno = 0;
-		ssize_t r = send(sck, pk, sz, MSG_NOSIGNAL);
+		ssize_t r = Util::Send(sck, pk, sz, NULL);
 		if (r == -1) {
-			warn("couldn't send()");
+			WX("Util::Send() failed (%zu bytes on connected socket)", sz);
 			continue;
 		}
 
@@ -113,21 +111,21 @@ MasterComm::FetchCount(int sck, int numtries, uint64_t to_us)
 			continue;
 
 		if (!pg_.IsConnless(buf, r)) {
-			warnx("not a connless packet");
+			WX("not a connless packet");
 			continue;
 		}
 
 		EClPkts typ = pg_.IdentifyConnless(buf, r);
 
 		if (typ != SB_COUNT) {
-			warnx("unexpected reply");
+			WX("unexpected reply");
 			continue;
 		}
 
 		size_t cnt = 0;
 
 		if (!pg_.ParseConnless_SB_COUNT(buf, r, &cnt)) {
-			warnx("failed to parse SB_COUNT paket");
+			WX("failed to parse SB_COUNT paket");
 			continue;
 		}
 
@@ -164,10 +162,9 @@ MasterComm::TryFetchList(int sck, int num_expected,
 	unsigned char pk[32];
 	size_t sz = pg_.MkConnless(pk, sizeof pk, SB_GETLIST, NULL, 0);
 
-	errno = 0;
-	ssize_t r = send(sck, pk, sz, MSG_NOSIGNAL);
+	ssize_t r = Util::Send(sck, pk, sz, NULL);
 	if (r == -1) {
-		warn("couldn't send()");
+		WX("Util::Send() failed (%zu bytes on connected socket)", sz);
 		return -1;
 	}
 
@@ -181,19 +178,19 @@ MasterComm::TryFetchList(int sck, int num_expected,
 			return -1;
 
 		if (!pg_.IsConnless(buf, r)) {
-			warnx("not a connless packet");
+			WX("not a connless packet");
 			return -1;
 		}
 
 		EClPkts typ = pg_.IdentifyConnless(buf, r);
 
 		if (typ != SB_LIST) {
-			warnx("unexpected reply");
+			WX("unexpected reply");
 			return -1;
 		}
 
 		if (!pg_.ParseConnless_SB_LIST(buf, r, tmp)) {
-			warnx("failed to parse SB_COUNT paket");
+			WX("failed to parse SB_COUNT paket");
 			return -1;
 		}
 

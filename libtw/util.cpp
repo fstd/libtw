@@ -15,6 +15,12 @@
 #include <unistd.h>
 #include <err.h>
 
+extern "C" {
+#include <libsrsbsns/addr.h>
+}
+
+#include "debug.h"
+
 #include <libtw/util.h>
 
 namespace tw {
@@ -35,7 +41,6 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 	memset(&sa, 0, sizeof sa);
 	uint64_t tend = Util::tstamp() + to_us;
 	while(Util::tstamp() < tend) {
-		//fprintf(stderr, "receiving\n");
 		errno = 0;
 		socklen_t alen = sizeof sa;
 		ssize_t r = recvfrom(sck, buf, len, MSG_DONTWAIT,
@@ -47,9 +52,9 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 				continue;
 			}
 
-			warn("couldn't recv()");
+			W("couldn't recv()");
 		} else if (r == 0) {
-			warnx("empty response");
+			WX("empty response");
 			usleep(sleep_us);
 			continue;
 		}
@@ -69,7 +74,7 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 					from, fromsz);
 			port = ntohs(((sockaddr_in*)&sa)->sin_port);
 		} else if (from)
-			warnx("wut?");
+			WX("wut?");
 
 		if (from) {
 			char portstr[7];
@@ -82,6 +87,29 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 	}
 
 	return 0;
+}
+
+ssize_t
+Util::Send(int sck, void *buf, size_t len, const char *destaddr)
+{
+		struct sockaddr_storage sa;
+		if (destaddr && !addr_make_sockaddr(destaddr, (sockaddr*)&sa)) {
+				WX("couldn't make sockaddr for '%s'", destaddr);
+				return -1;
+		}
+
+		errno = 0;
+		ssize_t r = sendto(sck, buf, len, MSG_NOSIGNAL,
+						destaddr ? (sockaddr*)&sa : NULL,
+						destaddr ? sizeof sa : 0);
+
+		if (r == -1)
+			W("couldn't send()");
+
+		if (r < (ssize_t)len)
+			WX("short send (%zd/%zu)", r, len);
+
+		return r;
 }
 
 void

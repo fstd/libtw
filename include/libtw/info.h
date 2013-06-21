@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 
-#include <libtw/pktgen.h>
+#include <libtw/proto_connless.h>
 
 using std::string;
 using std::vector;
@@ -21,7 +21,7 @@ struct ServerInfo;
 class InfoComm {
 private:
 	map<string, ServerInfo> infomap_;
-	PktGen pg_;
+	ConnlessProtoUnit pg_;
 	unsigned char tok_;
 	uint64_t to_;
 

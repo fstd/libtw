@@ -1,4 +1,4 @@
-/* info.cpp - (C) 2013, Timo Buhrmester, Learath2
+/* info.cpp - (C) 2013, Timo Buhrmester
  * libtw - uhm
   * See README for contact-, COPYING for license information.  */
 
@@ -11,6 +11,9 @@ extern "C" {
 #include <libtw/info.h>
 #include <libtw/util.h>
 
+#include "twprot.h"
+#include "debug.h"
+
 
 /* sort in somewhere */
 #define CHUNKSZ 100
@@ -18,10 +21,7 @@ extern "C" {
 namespace tw {
 
 InfoComm::InfoComm()
-: infomap_(),
-  pg_(),
-  tok_(0),
-  to_(500000)
+: infomap_(), pg_(), tok_(0), to_(500000)
 {
 }
 
@@ -45,7 +45,7 @@ InfoComm::Refresh()
 	int sck = addr_bind_socket_dgram("0.0.0.0", 0, true, true);
 
 	if (sck < 0) {
-		warnx("couldn't make socket");
+		WX("couldn't make socket");
 		return -1;
 	}
 
@@ -62,7 +62,7 @@ InfoComm::Refresh()
 
 		int r = RefreshChunk(sck, tok_, addrs.begin() + i, n);
 		if (r < 0)
-			warnx("failed to refresh chunk\n");
+			WX("failed to refresh chunk\n");
 		else
 			suc += r;
 	}
@@ -77,25 +77,14 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		vector<string>::const_iterator start, size_t num)
 {
 	int suc = 0;
-	unsigned char pkt[16];
-	size_t sz = pg_.MkConnless_SB_GETINFO(pkt, sizeof pkt, tok);
+	unsigned char pk[16];
+	size_t sz = pg_.MkConnless_SB_GETINFO(pk, sizeof pk, tok);
 
 	for(size_t i = 0; i < num; ((start++), (i++))) {
-		struct sockaddr_storage sa;
-		if (!addr_make_sockaddr(start->c_str(), (sockaddr*)&sa)) {
-			warnx("couldn't make sockaddr for '%s'",
-					start->c_str());
-			continue;
-		}
-
-		//warnx("sending to '%s'", start->c_str());
-
 		uint64_t tsend = Util::tstamp();
-		errno = 0;
-		ssize_t r = sendto(sck, pkt, sz, MSG_NOSIGNAL,
-				(sockaddr*)&sa, sizeof sa);
+		ssize_t r = Util::Send(sck, pk, sz, start->c_str());
 		if (r == -1) {
-			warn("couldn't send()");
+			WX("Util::Send() failed (%zu bytes to %s)", sz, start->c_str());
 			continue;
 		}
 
@@ -114,23 +103,24 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 
 		uint64_t trecv = Util::tstamp();
 
-		//warnx("received %zd bytes from '%s'", r, from);
+		//WX("received %zd bytes from '%s'", r, from);
 
 		if (!pg_.IsConnless(buf, r)) {
-			warnx("not a connless packet");
+			WX("not a connless packet (%s)", from);
+			Util::hexdump(buf, r, "not a connless");
 			continue;
 		}
 
 		EClPkts typ = pg_.IdentifyConnless(buf, r);
 
 		if (typ != SB_INFO) {
-			warnx("unexpected reply '%s'",
+			WX("unexpected reply '%s'",
 					pg_.NameConnless(typ));
 			continue;
 		}
 
 		if (!infomap_.count(from)) {
-			warnx("reply from '%s' whom we don't know!", from);
+			WX("reply from '%s' whom we don't know!", from);
 			continue;
 		}
 
@@ -141,7 +131,7 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		int tk = (int)strtol(Up.GetString(), NULL, 10);
 
 		if (tk != tok) {
-			warnx("wrong token");
+			WX("wrong token");
 			continue;
 		}
 
@@ -178,4 +168,5 @@ void PlayerInfo::Dump() const
 			name_.c_str(), clan_.c_str(), country_, score_);
 
 }
+
 };

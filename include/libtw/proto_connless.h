@@ -1,9 +1,9 @@
-/* pktgen.h - (C) 2013, Timo Buhrmester
+/* proto_connless.h - (C) 2013, Timo Buhrmester
  * libtw - uhm
   * See README for contact-, COPYING for license information.  */
 
-#ifndef LIBTW_PKTGEN_H
-#define LIBTW_PKTGEN_H
+#ifndef LIBTW_PROTO_CONNLESS_H
+#define LIBTW_PROTO_CONNLESS_H 1
 
 #include <vector>
 #include <string>
@@ -12,7 +12,6 @@
 #define Y(A...) A
 
 namespace tw {
-
 
 #define CONNLESS_PACKETS                                        \
 X(SB_HEARTBEAT,        Y({255, 255, 255, 255, 'b', 'e', 'a', '2'})) \
@@ -48,10 +47,12 @@ using std::string;
 
 struct ServerInfo;
 
-class PktGen {
+class ConnlessProtoUnit {
 public:
-	PktGen();
-	virtual ~PktGen();
+	ConnlessProtoUnit();
+	virtual ~ConnlessProtoUnit();
+
+	/* --- packet generation --- */
 
 	size_t MkConnless(unsigned char *pBuf, size_t BufSz, EClPkts typ,
 			const void *pData, size_t DataLen);
@@ -59,25 +60,12 @@ public:
 	size_t MkConnless_SB_GETINFO(unsigned char *pBuf, size_t BufSz,
 			unsigned char token);
 
+
 	/* tell apart connless from regular packets */
 	bool IsConnless(unsigned char *pk, size_t pklen) const;
 
-	/* if regular, tell apart control and normal packets */
-	bool IsControl(unsigned char *pk, size_t pklen) const;
-
-	/* if normal-regular, tell apart system/user messages */
-	bool IsSystem(unsigned char *pk, size_t pklen) const;
-
 	/* for connless packets, return type of connless packet */
 	EClPkts IdentifyConnless(unsigned char *pk, size_t pklen) const;
-
-	/* for control-regular, return type control packet */
-	int IdentifyControl(unsigned char *pk, size_t pklen) const;
-
-	/* for normal-regular (user and system), return msgtype */
-	int IdentifyRegular(unsigned char *pk, size_t pklen) const;
-
-	const char *NameConnless(EClPkts typ) const;
 
 	bool ParseConnless_SB_COUNT(unsigned char *pk, size_t pklen,
 			size_t *out_srvcnt) const;
@@ -88,65 +76,11 @@ public:
 	bool ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
 			ServerInfo *out_info) const;
 
+	/* probably only useful for debugging */
+	const char *NameConnless(EClPkts typ) const;
 
 };
 
-/* This is cuntpasted from Teeworlds and somewhat mangled,
- * but originally (c) Magnus Auvinen; see README for details */
-// variable int packing
-class CVariableInt
-{
-public:
-	static unsigned char *Pack(unsigned char *pDst, int i);
-	static const unsigned char *Unpack(const unsigned char *pSrc, int *pInOut);
-	static long Compress(const void *pSrc, int Size, void *pDst);
-	static long Decompress(const void *pSrc, int Size, void *pDst);
 };
 
-class CPacker
-{
-	enum
-	{
-		PACKER_BUFFER_SIZE=1024*2
-	};
-
-	unsigned char m_aBuffer[PACKER_BUFFER_SIZE];
-	unsigned char *m_pCurrent;
-	unsigned char *m_pEnd;
-	int m_Error;
-public:
-	void Reset();
-	void AddInt(int i);
-	void AddString(const char *pStr, int Limit);
-	void AddRaw(const void *pData, int Size);
-
-	int Size() const { return (int)(m_pCurrent-m_aBuffer); }
-	const unsigned char *Data() const { return m_aBuffer; }
-	bool Error() const { return m_Error; }
-};
-
-class CUnpacker
-{
-	const unsigned char *m_pStart;
-	const unsigned char *m_pCurrent;
-	const unsigned char *m_pEnd;
-	int m_Error;
-public:
-	enum
-	{
-		SANITIZE=1,
-		SANITIZE_CC=2,
-		SKIP_START_WHITESPACES=4
-	};
-
-	void Reset(const void *pData, int Size);
-	int GetInt();
-	const char *GetString(int SanitizeType = SANITIZE);
-	const unsigned char *GetRaw(int Size);
-	bool Error() const { return m_Error; }
-};
-
-
-};
-
-#endif /* LIBTW_PKTGEN_H */
+#endif /* LIBTW_PROTO_CONNLESS_H */

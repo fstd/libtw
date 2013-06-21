@@ -16,6 +16,7 @@ public:
 	static ssize_t Recv(int sck, void *buf, size_t len, uint64_t to_us,
 			int sleep_us = 10000, char *from = NULL,
 			size_t fromsz = 0);
+	static ssize_t Send(int sck, void *buf, size_t len, const char *destaddr);
 
 	static void strNcat(char *dest, const char *src, size_t destsz);
 	static void hexdump(const void *pAddressIn, long lSize,

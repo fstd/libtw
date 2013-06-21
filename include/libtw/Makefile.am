@@ -1,1 +1,1 @@
-pkginclude_HEADERS = tw.h master.h pktgen.h util.h info.h
+pkginclude_HEADERS = tw.h master.h proto_connless.h proto_regular.h util.h info.h
