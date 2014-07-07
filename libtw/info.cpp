@@ -17,14 +17,19 @@ extern "C" {
 #include "debug.h"
 
 
-/* sort in somewhere */
-#define CHUNKSZ 100
-
 namespace tw {
 
 InfoComm::InfoComm()
-: infomap_(), pg_(), tok_(0), to_(500000)
+: infomap_(), pg_(), tok_(0), chunksz_(100), to_(2000000)
 {
+}
+
+
+void
+InfoComm::SetPolicy(size_t chunksz, uint64_t to_us)
+{
+	chunksz_ = chunksz;
+	to_ = to_us;
 }
 
 void
@@ -70,9 +75,9 @@ InfoComm::Refresh()
 			addrs.push_back(it->first);
 	}
 
-	for(size_t i = 0; i < addrs.size(); i += CHUNKSZ) {
-		size_t n = i+CHUNKSZ <= addrs.size()
-				?  CHUNKSZ : addrs.size() - i;
+	for(size_t i = 0; i < addrs.size(); i += chunksz_) {
+		size_t n = i+chunksz_ <= addrs.size()
+				?  chunksz_ : addrs.size() - i;
 
 		int r = RefreshChunk(sck, tok_, addrs.begin() + i, n);
 		if (r < 0)

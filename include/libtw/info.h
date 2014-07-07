@@ -5,6 +5,8 @@
 #ifndef LIBTW_INFO_H
 #define LIBTW_INFO_H 1
 
+#include <cstdint>
+
 #include <string>
 #include <vector>
 #include <map>
@@ -23,6 +25,7 @@ private:
 	map<string, ServerInfo> infomap_;
 	ConnlessProtoUnit pg_;
 	unsigned char tok_;
+	size_t chunksz_;
 	uint64_t to_;
 
 	int RefreshChunk(int sck, unsigned char tok,
@@ -33,6 +36,7 @@ private:
 public:
 	InfoComm();
 
+	void SetPolicy(size_t chunksz, uint64_t to_us);
 	void SetServers(vector<string> const& srvs);
 
 	ServerInfo const& Get(string const& addr) const { return infomap_.at(addr); }
