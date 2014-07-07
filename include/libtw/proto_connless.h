@@ -20,7 +20,9 @@ X(SB_LIST,             Y({255, 255, 255, 255, 'l', 'i', 's', '2'})) \
 X(SB_GETCOUNT,         Y({255, 255, 255, 255, 'c', 'o', 'u', '2'})) \
 X(SB_COUNT,            Y({255, 255, 255, 255, 's', 'i', 'z', '2'})) \
 X(SB_GETINFO,          Y({255, 255, 255, 255, 'g', 'i', 'e', '3'})) \
+X(SB_GETINFO64,        Y({255, 255, 255, 255, 'f', 's', 't', 'd'})) \
 X(SB_INFO,             Y({255, 255, 255, 255, 'i', 'n', 'f', '3'})) \
+X(SB_INFO64,           Y({255, 255, 255, 255, 'd', 't', 's', 'f'})) \
 X(SB_FWCHECK,          Y({255, 255, 255, 255, 'f', 'w', '?', '?'})) \
 X(SB_FWRESPONSE,       Y({255, 255, 255, 255, 'f', 'w', '!', '!'})) \
 X(SB_FWOK,             Y({255, 255, 255, 255, 'f', 'w', 'o', 'k'})) \
@@ -60,6 +62,9 @@ public:
 	size_t MkConnless_SB_GETINFO(unsigned char *pBuf, size_t BufSz,
 			unsigned char token);
 
+	size_t MkConnless_SB_GETINFO64(unsigned char *pBuf, size_t BufSz,
+			unsigned char token);
+
 
 	/* tell apart connless from regular packets */
 	bool IsConnless(unsigned char *pk, size_t pklen) const;
@@ -74,6 +79,9 @@ public:
 			vector<string> & result) const;
 
 	bool ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
+			ServerInfo *out_info) const;
+
+	bool ParseConnless_SB_INFO64(unsigned char *pk, size_t pklen,
 			ServerInfo *out_info) const;
 
 	/* probably only useful for debugging */

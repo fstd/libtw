@@ -2,6 +2,8 @@
  * libtw - uhm
   * See README for contact-, COPYING for license information.  */
 
+#include <cstring>
+
 #include <err.h>
 
 extern "C" {
@@ -32,7 +34,15 @@ InfoComm::SetServers(vector<string> const& srvs)
 
 	for(vector<string>::const_iterator it = srvs.begin();
 			it != srvs.end(); it++) {
-		infomap_[*it].addr_ = *it;
+
+		if (strncmp(it->c_str(), "64!", 3) == 0) {
+			infomap_[it->c_str()+3].addr_ = string(it->c_str()+3);
+			infomap_[it->c_str()+3].ext64 = true;
+		} else {
+			infomap_[*it].addr_ = *it;
+			infomap_[*it].ext64 = false;
+		}
+
 		infomap_[*it].tsend_ = infomap_[*it].trecv_ = 0;
 		infomap_[*it].on_ = false;
 	}
@@ -42,7 +52,7 @@ int
 InfoComm::Refresh()
 {
 	/*broadcast since we might add LAN support some day*/
-	int sck = addr_bind_socket_dgram("0.0.0.0", 0, true, true);
+	int sck = addr_bind_socket_dgram_p("0.0.0.0", 0, true, true, NULL, NULL, to_ ,to_);
 
 	if (sck < 0) {
 		WX("couldn't make socket");
@@ -53,8 +63,12 @@ InfoComm::Refresh()
 
 	vector<string> addrs;
 	for(map<string, ServerInfo>::const_iterator it = infomap_.begin();
-			it != infomap_.end(); it++)
-		addrs.push_back(it->first);
+			it != infomap_.end(); it++) {
+		if (it->second.ext64)
+			addrs.push_back(string("64!") + it->first);
+		else
+			addrs.push_back(it->first);
+	}
 
 	for(size_t i = 0; i < addrs.size(); i += CHUNKSZ) {
 		size_t n = i+CHUNKSZ <= addrs.size()
@@ -78,11 +92,18 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 {
 	int suc = 0;
 	unsigned char pk[16];
+	unsigned char pk64[16];
 	size_t sz = pg_.MkConnless_SB_GETINFO(pk, sizeof pk, tok);
+	size_t sz64 = pg_.MkConnless_SB_GETINFO64(pk64, sizeof pk64, tok);
 
 	for(size_t i = 0; i < num; ((start++), (i++))) {
 		uint64_t tsend = Util::tstamp();
-		ssize_t r = Util::Send(sck, pk, sz, start->c_str());
+		ssize_t r;
+		if (strncmp(start->c_str(), "64!", 3) == 0)
+			r = Util::Send(sck, pk64, sz64, start->c_str() + 3);
+		else
+			r = Util::Send(sck, pk, sz, start->c_str());
+
 		if (r == -1) {
 			WX("Util::Send() failed (%zu bytes to %s)", sz, start->c_str());
 			continue;
@@ -113,9 +134,8 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 
 		EClPkts typ = pg_.IdentifyConnless(buf, r);
 
-		if (typ != SB_INFO) {
-			WX("unexpected reply '%s'",
-					pg_.NameConnless(typ));
+		if (typ != SB_INFO && typ != SB_INFO64) {
+			WX("unexpected reply '%s'", pg_.NameConnless(typ));
 			continue;
 		}
 
@@ -135,14 +155,22 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 			continue;
 		}
 
-		if (!pg_.ParseConnless_SB_INFO(buf, r, info)) {
-			continue;
+		if (typ == SB_INFO) {
+			if (!pg_.ParseConnless_SB_INFO(buf, r, info))
+				continue;
+			suc++;
+		} else if (typ == SB_INFO64) {
+			if (!pg_.ParseConnless_SB_INFO64(buf, r, info))
+				continue;
+
+			if (info->clt_.size() == info->numc_) {
+				WVX("meep");
+				suc++;
+			}
 		}
 
 		info->trecv_ = trecv;
 		info->on_ = true;
-
-		suc++;
 	}
 
 	return suc;

@@ -74,6 +74,8 @@ struct ServerInfo {
 	int maxc_;
 	int nump_;
 	int maxp_;
+	bool ext64;
+	int offset_; //64p impl detail
 
 	bool on_;
 	uint64_t tsend_;

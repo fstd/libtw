@@ -3,6 +3,7 @@
   * See README for contact-, COPYING for license information.  */
 
 #include <cstring>
+#include <cerrno>
 
 #include <arpa/inet.h>
 #include <err.h>
@@ -70,6 +71,13 @@ ConnlessProtoUnit::MkConnless_SB_GETINFO(unsigned char *pBuf, size_t BufSz,
 		unsigned char token)
 {
 	return MkConnless(pBuf, BufSz, SB_GETINFO, &token, 1);
+}
+
+size_t
+ConnlessProtoUnit::MkConnless_SB_GETINFO64(unsigned char *pBuf, size_t BufSz,
+		unsigned char token)
+{
+	return MkConnless(pBuf, BufSz, SB_GETINFO64, &token, 1);
 }
 
 bool
@@ -191,6 +199,67 @@ ConnlessProtoUnit::ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
 			WX("failed to parse for '%s' (%d)",
 					out_info->addr_.c_str(), i);
 			Util::hexdump(pk, pklen, "errorneous SB_INFO");
+			return false;
+		}
+
+		out_info->clt_.push_back(PlayerInfo(name, clan, country,
+				score, player));
+	}
+
+	return true;
+}
+
+bool
+ConnlessProtoUnit::ParseConnless_SB_INFO64(unsigned char *pk, size_t pklen,
+		ServerInfo *out_info) const
+{
+	CUnpacker Up;
+	Up.Reset(pk+6+8, pklen - (6+8));
+
+	(void)Up.GetString(); //we did the token already
+	out_info->ver_ = Up.GetString();
+	if (strncmp(out_info->ver_.c_str(), "0.6", 3) != 0) {
+		WX("wrong version (%s)", out_info->ver_.c_str());
+		return false;
+	}
+
+	out_info->name_ = Up.GetString();
+	out_info->map_ = Up.GetString();
+	out_info->mod_ = Up.GetString();
+	out_info->flg_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->nump_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->maxp_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->numc_ = (int)strtol(Up.GetString(), NULL, 10);
+	out_info->maxc_ = (int)strtol(Up.GetString(), NULL, 10);
+
+	if (Up.Error()) {
+		WX("failed to parse for '%s'", out_info->addr_.c_str());
+		Util::hexdump(pk, pklen, "errorneous SB_INFO64");
+		return false;
+	}
+
+	out_info->offset_ = Up.GetInt();
+
+	if (Up.Error()) {
+		WX("eeew, old-style SBINFO64.");
+		out_info->offset_ = 0; // :S
+		Up.Reset(pk+6+8, pklen - (6+8));
+		for (int x = 0; x < 10; x++)
+			(void)Up.GetString();
+	}
+
+	for(int i = 0; i < out_info->numc_; i++)
+	{
+		string name(Up.GetString());
+		string clan(Up.GetString());
+		int country = (int)strtol(Up.GetString(), NULL, 0);
+		int score = (int)strtol(Up.GetString(), NULL, 0);
+		bool player = (bool)strtol(Up.GetString(), NULL, 0);
+
+		if (Up.Error()) {
+			WX("failed to parse for '%s' (%d)",
+					out_info->addr_.c_str(), i);
+			Util::hexdump(pk, pklen, "errorneous SB_INFO64");
 			return false;
 		}
 

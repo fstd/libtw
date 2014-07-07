@@ -92,24 +92,23 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 ssize_t
 Util::Send(int sck, void *buf, size_t len, const char *destaddr)
 {
-		struct sockaddr_storage sa;
-		if (destaddr && !addr_make_sockaddr(destaddr, (sockaddr*)&sa)) {
-				WX("couldn't make sockaddr for '%s'", destaddr);
-				return -1;
-		}
+	struct sockaddr_storage sa;
+	size_t sasz;
+	if (destaddr && !addr_make_sockaddr(destaddr, (sockaddr*)&sa, &sasz)) {
+		WX("couldn't make sockaddr for '%s'", destaddr);
+		return -1;
+	}
 
-		errno = 0;
-		ssize_t r = sendto(sck, buf, len, MSG_NOSIGNAL,
-						destaddr ? (sockaddr*)&sa : NULL,
-						destaddr ? sizeof sa : 0);
+	errno = 0;
+	ssize_t r = sendto(sck, buf, len, MSG_NOSIGNAL,
+	    destaddr ? (sockaddr*)&sa : NULL, destaddr ? sasz : 0);
 
-		if (r == -1)
-			W("couldn't send()");
+	if (r == -1)
+		W("couldn't send()");
+	else if (r < (ssize_t)len)
+		WX("short send (%zd/%zu)", r, len);
 
-		if (r < (ssize_t)len)
-			WX("short send (%zd/%zu)", r, len);
-
-		return r;
+	return r;
 }
 
 void
