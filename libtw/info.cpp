@@ -4,6 +4,8 @@
 
 #include <cstring>
 
+#include <unistd.h>
+
 #include <err.h>
 
 extern "C" {
