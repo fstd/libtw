@@ -42,16 +42,19 @@ InfoComm::SetServers(vector<string> const& srvs)
 	for(vector<string>::const_iterator it = srvs.begin();
 			it != srvs.end(); it++) {
 
-		if (strncmp(it->c_str(), "64!", 3) == 0) {
-			infomap_[it->c_str()+3].addr_ = string(it->c_str()+3);
-			infomap_[it->c_str()+3].ext64 = true;
+		bool is64 = strncmp(it->c_str(), "64!", 3) == 0;
+
+		string key = is64 ? string(it->c_str()+3) : *it;
+		if (is64) {
+			infomap_[key].addr_ = string(it->c_str()+3);
+			infomap_[key].ext64 = true;
 		} else {
-			infomap_[*it].addr_ = *it;
-			infomap_[*it].ext64 = false;
+			infomap_[key].addr_ = *it;
+			infomap_[key].ext64 = false;
 		}
 
-		infomap_[*it].tsend_ = infomap_[*it].trecv_ = 0;
-		infomap_[*it].on_ = false;
+		infomap_[key].tsend_ = infomap_[key].trecv_ = 0;
+		infomap_[key].on_ = false;
 	}
 }
 
