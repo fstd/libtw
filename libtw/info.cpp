@@ -109,18 +109,24 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 	for(size_t i = 0; i < num; ((start++), (i++))) {
 		uint64_t tsend = Util::tstamp();
 		ssize_t r;
-		if (strncmp(start->c_str(), "64!", 3) == 0)
-			r = Util::Send(sck, pk64, sz64, start->c_str() + 3);
+
+		bool is64 = strncmp(start->c_str(), "64!", 3) == 0;
+
+		string key = is64 ? string(start->c_str()+3) : *start;
+
+		WVX( "sending to '%s'", key.c_str());
+		if (is64)
+			r = Util::Send(sck, pk64, sz64, key.c_str());
 		else
-			r = Util::Send(sck, pk, sz, start->c_str());
+			r = Util::Send(sck, pk, sz, key.c_str());
 
 		if (r == -1) {
-			WX("Util::Send() failed (%zu bytes to %s)", sz, start->c_str());
+			WX("Util::Send() failed (%zu bytes to %s)", sz, key.c_str());
 			continue;
 		}
 
-		infomap_[*start].tsend_ = tsend;
-		infomap_[*start].on_ = false;
+		infomap_[key].tsend_ = tsend;
+		infomap_[key].on_ = false;
 	}
 
 	for(;;) {
