@@ -27,6 +27,12 @@ private:
 	unsigned char tok_;
 	size_t chunksz_;
 	uint64_t to_;
+	uint64_t reqdelay_;
+
+	int td_sck = sck;
+	unsigned char td_tok = tok;
+	vector<string>::const_iterator td_start = start;
+	size_t td_num = num;
 
 	int RefreshChunk(int sck, unsigned char tok,
 			vector<string>::const_iterator start,
@@ -36,7 +42,7 @@ private:
 public:
 	InfoComm();
 
-	void SetPolicy(size_t chunksz, uint64_t to_us);
+	void SetPolicy(size_t chunksz, uint64_t to_us, uint64_t reqdelay);
 	void SetServers(vector<string> const& srvs);
 
 	ServerInfo const& Get(string const& addr) const { return infomap_.at(addr); }

@@ -3,6 +3,7 @@
   * See README for contact-, COPYING for license information.  */
 
 #include <cstring>
+#include <thread>
 
 #include <unistd.h>
 
@@ -22,16 +23,17 @@ extern "C" {
 namespace tw {
 
 InfoComm::InfoComm()
-: infomap_(), pg_(), tok_(0), chunksz_(100), to_(2000000)
+: infomap_(), pg_(), tok_(0), chunksz_(100), to_(2000000), reqdelay_(0)
 {
 }
 
 
 void
-InfoComm::SetPolicy(size_t chunksz, uint64_t to_us)
+InfoComm::SetPolicy(size_t chunksz, uint64_t to_us, uint64_t reqdelay)
 {
 	chunksz_ = chunksz;
 	to_ = to_us;
+	reqdelay_ = reqdelay_;
 }
 
 void
@@ -96,29 +98,34 @@ InfoComm::Refresh()
 	return suc;
 }
 
+
+void tfun(void *) {
+	std::cout << "Hello from thread " << std::endl;
+	static_cast<InfoComm>(v)->RefreshChunk_T();
+}
+
+
 int
-InfoComm::RefreshChunk(int sck, unsigned char tok,
-		vector<string>::const_iterator start, size_t num)
+InfoComm::RefreshChunk_T()
 {
-	int suc = 0;
 	unsigned char pk[16];
 	unsigned char pk64[16];
-	size_t sz = pg_.MkConnless_SB_GETINFO(pk, sizeof pk, tok);
-	size_t sz64 = pg_.MkConnless_SB_GETINFO64(pk64, sizeof pk64, tok);
+	size_t sz = pg_.MkConnless_SB_GETINFO(pk, sizeof pk, td_tok);
+	size_t sz64 = pg_.MkConnless_SB_GETINFO64(pk64, sizeof pk64, td_tok);
 
-	for(size_t i = 0; i < num; ((start++), (i++))) {
+	for(size_t i = 0; i < td_num; ((td_start++), (i++))) {
 		uint64_t tsend = Util::tstamp();
 		ssize_t r;
 
-		bool is64 = strncmp(start->c_str(), "64!", 3) == 0;
+		bool is64 = strncmp(td_start->c_str(), "64!", 3) == 0;
 
-		string key = is64 ? string(start->c_str()+3) : *start;
+		string key = is64 ? string(td_start->c_str()+3) : *td_start;
 
 		WVX( "sending to '%s'", key.c_str());
 		if (is64)
-			r = Util::Send(sck, pk64, sz64, key.c_str());
+			r = Util::Send(td_sck, pk64, sz64, key.c_str());
 		else
-			r = Util::Send(sck, pk, sz, key.c_str());
+			r = Util::Send(td_sck, pk, sz, key.c_str());
 
 		if (reqdelay_)
 			usleep(reqdelay_);
@@ -131,6 +138,19 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		infomap_[key].tsend_ = tsend;
 		infomap_[key].on_ = false;
 	}
+}
+
+int
+InfoComm::RefreshChunk(int sck, unsigned char tok,
+		vector<string>::const_iterator start, size_t num)
+{
+	td_sck = sck;
+	td_tok = tok;
+	td_start = start;
+	td_num = num;
+
+        std::thread t1(tfun, static_cast<void*>(this));
+	int suc = 0;
 
 	for(;;) {
 		char from[128] = {0};
@@ -192,6 +212,7 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		info->on_ = true;
 	}
 
+	t1.join();
 	return suc;
 }
 
