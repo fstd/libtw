@@ -120,6 +120,9 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		else
 			r = Util::Send(sck, pk, sz, key.c_str());
 
+		if (reqdelay_)
+			usleep(reqdelay_);
+
 		if (r == -1) {
 			WX("Util::Send() failed (%zu bytes to %s)", sz, key.c_str());
 			continue;

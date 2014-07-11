@@ -241,24 +241,25 @@ ConnlessProtoUnit::ParseConnless_SB_INFO64(unsigned char *pk, size_t pklen,
 	out_info->offset_ = Up.GetInt();
 
 	if (Up.Error()) {
-		WX("eeew, old-style SBINFO64.");
+		WX("eeew, old-style SBINFO64 for '%s'", out_info->addr_.c_str());
 		out_info->offset_ = 0; // :S
 		Up.Reset(pk+6+8, pklen - (6+8));
 		for (int x = 0; x < 10; x++)
 			(void)Up.GetString();
 	}
 
-	for(int i = 0; i < out_info->numc_; i++)
-	{
-		string name(Up.GetString());
+	for (;;) {
+		const char *c = Up.GetString();
+		if (Up.Error())
+			break;
+		string name(c);
 		string clan(Up.GetString());
 		int country = (int)strtol(Up.GetString(), NULL, 0);
 		int score = (int)strtol(Up.GetString(), NULL, 0);
 		bool player = (bool)strtol(Up.GetString(), NULL, 0);
 
 		if (Up.Error()) {
-			WX("failed to parse for '%s' (%d)",
-					out_info->addr_.c_str(), i);
+			WX("failed to parse for '%s'", out_info->addr_.c_str());
 			Util::hexdump(pk, pklen, "errorneous SB_INFO64");
 			return false;
 		}
