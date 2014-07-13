@@ -33,7 +33,7 @@ InfoComm::SetPolicy(size_t chunksz, uint64_t to_us, uint64_t reqdelay)
 {
 	chunksz_ = chunksz;
 	to_ = to_us;
-	reqdelay_ = reqdelay_;
+	reqdelay_ = reqdelay;
 }
 
 void
@@ -236,7 +236,6 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 				continue;
 
 			if (info->clt_.size() == info->numc_) {
-				WVX("meep");
 				suc++;
 			}
 		}
