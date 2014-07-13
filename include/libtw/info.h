@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <mutex>
 
 #include <libtw/proto_connless.h>
 
@@ -28,12 +29,16 @@ private:
 	size_t chunksz_;
 	uint64_t to_;
 	uint64_t reqdelay_;
+	std::mutex mtx_;
+	bool done_;
 
-	int td_sck = sck;
-	unsigned char td_tok = tok;
-	vector<string>::const_iterator td_start = start;
-	size_t td_num = num;
+	int td_sck;
+	unsigned char td_tok;
+	vector<string>::const_iterator td_start;
+	size_t td_num;
 
+	void RefreshChunk_T();
+	friend void tfun(void *v);
 	int RefreshChunk(int sck, unsigned char tok,
 			vector<string>::const_iterator start,
 			size_t num);
@@ -85,6 +90,7 @@ struct ServerInfo {
 	int nump_;
 	int maxp_;
 	bool ext64;
+	bool reacted_;
 	int offset_; //64p impl detail
 
 	bool on_;

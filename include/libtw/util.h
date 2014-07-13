@@ -12,6 +12,7 @@ namespace tw {
 class Util {
 public:
 	static uint64_t tstamp();
+	static void tconv(struct timeval *tv, uint64_t *ts, bool tv_to_ts);
 
 	static ssize_t Recv(int sck, void *buf, size_t len, uint64_t to_us,
 			int sleep_us = 10000, char *from = NULL,

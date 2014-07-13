@@ -20,6 +20,7 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
 AC_CHECK_LIB([srsbsns], [addr_mksocket], [], [AC_MSG_ERROR([libsrsbsns not installed?])])
+AC_CHECK_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([no pthreads?])])
 
 AC_CHECK_HEADER_STDBOOL
 AC_CHECK_HEADERS([arpa/inet.h sys/socket.h sys/time.h])

@@ -95,17 +95,23 @@ InfoComm::Refresh()
 
 	close(sck);
 
+	for (auto it = infomap_.begin(); it != infomap_.end(); it++) {
+		if (it->second.on_ && it->second.ext64
+		    && it->second.numc_ != it->second.clt_.size())
+			it->second.on_ = false;
+			
+	}
+
 	return suc;
 }
 
 
-void tfun(void *) {
-	std::cout << "Hello from thread " << std::endl;
-	static_cast<InfoComm>(v)->RefreshChunk_T();
+void tfun(void *v) {
+	static_cast<InfoComm*>(v)->RefreshChunk_T();
 }
 
 
-int
+void
 InfoComm::RefreshChunk_T()
 {
 	unsigned char pk[16];
@@ -128,7 +134,7 @@ InfoComm::RefreshChunk_T()
 			r = Util::Send(td_sck, pk, sz, key.c_str());
 
 		if (reqdelay_)
-			usleep(reqdelay_);
+			std::this_thread::sleep_for(std::chrono::microseconds(reqdelay_));
 
 		if (r == -1) {
 			WX("Util::Send() failed (%zu bytes to %s)", sz, key.c_str());
@@ -136,8 +142,11 @@ InfoComm::RefreshChunk_T()
 		}
 
 		infomap_[key].tsend_ = tsend;
-		infomap_[key].on_ = false;
 	}
+
+	mtx_.lock();
+	done_ = true;
+	mtx_.unlock();
 }
 
 int
@@ -149,8 +158,18 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 	td_start = start;
 	td_num = num;
 
-        std::thread t1(tfun, static_cast<void*>(this));
+	for(size_t i = 0; i < num; ((start++), (i++))) {
+		bool is64 = strncmp(start->c_str(), "64!", 3) == 0;
+		string key = is64 ? string(start->c_str()+3) : *start;
+		infomap_[key].on_ = false;
+	}
+
+	done_ = false;
+
+        std::thread t1(tfun, this);
 	int suc = 0;
+
+	bool dieplx = false;
 
 	for(;;) {
 		char from[128] = {0};
@@ -158,8 +177,20 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		ssize_t r = Util::Recv(sck, buf, sizeof buf, to_, 1000,
 				from, sizeof from);
 
-		if (r <= 0)
+		if (r < 0)
 			break;
+		if (r == 0) {
+			if (dieplx)
+				break;
+			bool d;
+			mtx_.lock();
+			d = done_;
+			mtx_.unlock();
+			if (d)
+				dieplx = true;
+
+			continue;
+		}
 
 		uint64_t trecv = Util::tstamp();
 
@@ -193,6 +224,8 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 			WX("wrong token");
 			continue;
 		}
+
+		info->reacted_ = true;
 
 		if (typ == SB_INFO) {
 			if (!pg_.ParseConnless_SB_INFO(buf, r, info))

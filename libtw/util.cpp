@@ -25,6 +25,18 @@ extern "C" {
 
 namespace tw {
 
+void
+Util::tconv(struct timeval *tv, uint64_t *ts, bool tv_to_ts)
+{
+        if (tv_to_ts)
+                *ts = (uint64_t)tv->tv_sec * 1000000u + tv->tv_usec;
+        else {
+                tv->tv_sec = *ts / 1000000u;
+                tv->tv_usec = *ts % 1000000u;
+        }
+}
+
+
 uint64_t
 Util::tstamp()
 {
@@ -43,19 +55,42 @@ Util::Recv(int sck, void *buf, size_t len, uint64_t to_us, int sleep_us,
 	while(Util::tstamp() < tend) {
 		errno = 0;
 		socklen_t alen = sizeof sa;
+		fd_set fds;
+		FD_ZERO(&fds);
+		FD_SET(sck, &fds);
+
+		uint64_t trem = 0;
+		struct timeval tout;
+		if (tend) {
+			trem = tend - Util::tstamp();
+			if (trem <= 0)
+				trem = 1;
+			tconv(&tout, &trem, false);
+		}
+		errno=0;
+		int ret = select(sck+1, &fds, NULL, NULL, tend ? &tout : NULL);
+
+		if (ret == -1) {
+			if (errno == EINTR)
+			continue; //suppress warning, retry
+			W("select failed");
+			continue;
+		}
+
+		if (ret == 0)
+			continue;
+
 		ssize_t r = recvfrom(sck, buf, len, MSG_DONTWAIT,
 				(sockaddr*)&sa, &alen);
 		if (r == -1) {
 			if (errno == EWOULDBLOCK || errno == EAGAIN
 					|| errno == EINTR) {
-				usleep(sleep_us);
 				continue;
 			}
 
 			W("couldn't recv()");
 		} else if (r == 0) {
 			WX("empty response");
-			usleep(sleep_us);
 			continue;
 		}
 
