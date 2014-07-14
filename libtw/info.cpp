@@ -3,13 +3,13 @@
   * See README for contact-, COPYING for license information.  */
 
 #include <cstring>
-#include <thread>
 #include <random>
 #include <algorithm>
 
 #include <ctime>
 
 #include <unistd.h>
+#include <pthread.h>
 
 #include <err.h>
 
@@ -75,6 +75,10 @@ InfoComm::Refresh()
 		return -1;
 	}
 
+	if (pthread_mutex_init(&mtx_, NULL) != 0) {
+		WX("couldn't make mutex");
+	}
+
 	int suc = 0;
 
 	vector<string> addrs;
@@ -86,7 +90,8 @@ InfoComm::Refresh()
 			addrs.push_back(it->first);
 	}
 
-	std::shuffle(std::begin(addrs), std::end(addrs), std::default_random_engine(time(NULL)));
+	//std::shuffle(std::begin(addrs), std::end(addrs), std::default_random_engine(time(NULL)));
+	std::random_shuffle(addrs.begin(), addrs.end());
 
 	for(size_t i = 0; i < addrs.size(); i += chunksz_) {
 		size_t n = i+chunksz_ <= addrs.size()
@@ -108,12 +113,14 @@ InfoComm::Refresh()
 			
 	}
 
+	pthread_mutex_destroy(&mtx_);
 	return suc;
 }
 
 
-void tfun(void *v) {
+void *tfun(void *v) {
 	static_cast<InfoComm*>(v)->RefreshChunk_T();
+	return NULL;
 }
 
 
@@ -147,12 +154,14 @@ InfoComm::RefreshChunk_T()
 		infomap_[key].tsend_ = tsend;
 
 		if (reqdelay_)
-			std::this_thread::sleep_for(std::chrono::microseconds(reqdelay_));
+			usleep(reqdelay_);
 	}
 
-	mtx_.lock();
+	if (pthread_mutex_lock(&mtx_) != 0) {
+		WX("failed to lock mutex");
+	}
 	done_ = true;
-	mtx_.unlock();
+	pthread_mutex_unlock(&mtx_);
 }
 
 int
@@ -172,7 +181,12 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 
 	done_ = false;
 
-        std::thread t1(tfun, this);
+	pthread_t thr;
+	if (pthread_create(&thr, NULL, tfun, this) != 0) {
+		WX("failed to make thread");
+		return 0;
+	}
+
 	int suc = 0;
 
 	bool dieplx = false;
@@ -189,9 +203,12 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 			if (dieplx)
 				break;
 			bool d;
-			mtx_.lock();
+			if (pthread_mutex_lock(&mtx_) == 0) {
+				WX("failed to lock mutex!");
+				return 0;
+			}
 			d = done_;
-			mtx_.unlock();
+			pthread_mutex_unlock(&mtx_);
 			if (d)
 				dieplx = true;
 
@@ -250,7 +267,7 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 		info->on_ = true;
 	}
 
-	t1.join();
+	pthread_join(thr, NULL);
 	return suc;
 }
 

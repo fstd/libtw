@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <mutex>
+#include <pthread.h>
 
 #include <libtw/proto_connless.h>
 
@@ -29,7 +29,7 @@ private:
 	size_t chunksz_;
 	uint64_t to_;
 	uint64_t reqdelay_;
-	std::mutex mtx_;
+	pthread_mutex_t mtx_;
 	bool done_;
 
 	int td_sck;
@@ -38,7 +38,7 @@ private:
 	size_t td_num;
 
 	void RefreshChunk_T();
-	friend void tfun(void *v);
+	friend void *tfun(void *v);
 	int RefreshChunk(int sck, unsigned char tok,
 			vector<string>::const_iterator start,
 			size_t num);
