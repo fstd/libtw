@@ -29,7 +29,7 @@ AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_UINT64_T
 
-AC_CHECK_FUNCS([strdup gettimeofday memset strtol])
+AC_CHECK_FUNCS([gettimeofday memset select strdup strtol])
 
 AC_CONFIG_FILES([Makefile
 		 include/Makefile
