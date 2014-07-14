@@ -4,6 +4,10 @@
 
 #include <cstring>
 #include <thread>
+#include <random>
+#include <algorithm>
+
+#include <ctime>
 
 #include <unistd.h>
 
@@ -82,6 +86,8 @@ InfoComm::Refresh()
 			addrs.push_back(it->first);
 	}
 
+	std::shuffle(std::begin(addrs), std::end(addrs), std::default_random_engine(time(NULL)));
+
 	for(size_t i = 0; i < addrs.size(); i += chunksz_) {
 		size_t n = i+chunksz_ <= addrs.size()
 				?  chunksz_ : addrs.size() - i;
@@ -133,15 +139,15 @@ InfoComm::RefreshChunk_T()
 		else
 			r = Util::Send(td_sck, pk, sz, key.c_str());
 
-		if (reqdelay_)
-			std::this_thread::sleep_for(std::chrono::microseconds(reqdelay_));
-
 		if (r == -1) {
 			WX("Util::Send() failed (%zu bytes to %s)", sz, key.c_str());
 			continue;
 		}
 
 		infomap_[key].tsend_ = tsend;
+
+		if (reqdelay_)
+			std::this_thread::sleep_for(std::chrono::microseconds(reqdelay_));
 	}
 
 	mtx_.lock();
