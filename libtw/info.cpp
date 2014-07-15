@@ -203,7 +203,7 @@ InfoComm::RefreshChunk(int sck, unsigned char tok,
 			if (dieplx)
 				break;
 			bool d;
-			if (pthread_mutex_lock(&mtx_) == 0) {
+			if (pthread_mutex_lock(&mtx_) != 0) {
 				WX("failed to lock mutex!");
 				return 0;
 			}
