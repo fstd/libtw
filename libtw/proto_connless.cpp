@@ -189,15 +189,36 @@ ConnlessProtoUnit::ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
 
 	for(int i = 0; i < out_info->numc_; i++)
 	{
-		string name(Up.GetString());
-		string clan(Up.GetString());
-		int country = (int)strtol(Up.GetString(), NULL, 0);
-		int score = (int)strtol(Up.GetString(), NULL, 0);
-		bool player = (bool)strtol(Up.GetString(), NULL, 0);
+		const char *tmp = Up.GetString();
+		bool err = Up.Error();
+
+		if (err) {
+			if (i == out_info->nump_) { //some mods appear to do this...
+				WX("shitserver '%s' apparently not listing spectators",
+				    out_info->addr_.c_str());
+
+				break; //pretend success, anyway
+			}
+		}
+
+		string name(err ? "" : tmp);
+
+		err = err || (tmp = Up.GetString());
+		string clan(err ? "" : Up.GetString());
+
+		err = err || (tmp = Up.GetString());
+		int country = err ? 0 : (int)strtol(Up.GetString(), NULL, 0);
+
+		err = err || (tmp = Up.GetString());
+		int score = err ? 0 : (int)strtol(Up.GetString(), NULL, 0);
+
+		err = err || (tmp = Up.GetString());
+		bool player = err ? false : (bool)strtol(Up.GetString(), NULL, 0);
 
 		if (Up.Error()) {
-			WX("failed to parse for '%s' (%d)",
-					out_info->addr_.c_str(), i);
+			WX("failed to parse for '%s' ('%s', '%s', %d, %d, %d) (%d)",
+					out_info->addr_.c_str(), name.c_str(),
+					clan.c_str(), country, score, player, i);
 			Util::hexdump(pk, pklen, "errorneous SB_INFO");
 			return false;
 		}
