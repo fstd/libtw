@@ -98,8 +98,8 @@ InfoComm::Refresh()
 				?  chunksz_ : addrs.size() - i;
 
 		int r = RefreshChunk(sck, tok_, addrs.begin() + i, n);
-		if (r < 0)
-			WX("failed to refresh chunk\n");
+		if (r <= 0)
+			WX("failed to refresh chunk (%d)\n", r);
 		else
 			suc += r;
 	}
