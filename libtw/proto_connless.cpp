@@ -203,19 +203,23 @@ ConnlessProtoUnit::ParseConnless_SB_INFO(unsigned char *pk, size_t pklen,
 
 		string name(err ? "" : tmp);
 
-		err = err || (tmp = Up.GetString());
-		string clan(err ? "" : Up.GetString());
+		if (!err) tmp = Up.GetString();
+		err = err || Up.Error();
+		string clan(err ? "" : tmp);
 
-		err = err || (tmp = Up.GetString());
-		int country = err ? 0 : (int)strtol(Up.GetString(), NULL, 0);
+		if (!err) tmp = Up.GetString();
+		err = err || Up.Error();
+		int country = err ? 0 : (int)strtol(tmp, NULL, 10);
 
-		err = err || (tmp = Up.GetString());
-		int score = err ? 0 : (int)strtol(Up.GetString(), NULL, 0);
+		if (!err) tmp = Up.GetString();
+		err = err || Up.Error();
+		int score = err ? 0 : (int)strtol(tmp, NULL, 10);
 
-		err = err || (tmp = Up.GetString());
-		bool player = err ? false : (bool)strtol(Up.GetString(), NULL, 0);
+		if (!err) tmp = Up.GetString();
+		err = err || Up.Error();
+		bool player = err ? false : (bool)strtol(tmp, NULL, 10);
 
-		if (Up.Error()) {
+		if (err) {
 			WX("failed to parse for '%s' ('%s', '%s', %d, %d, %d) (%d)",
 					out_info->addr_.c_str(), name.c_str(),
 					clan.c_str(), country, score, player, i);
