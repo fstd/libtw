@@ -11,6 +11,8 @@ extern "C" {
 #include <libtw/info.h>
 #include <libtw/util.h>
 
+#include <unistd.h>
+
 #include "twprot.h"
 #include "debug.h"
 
@@ -42,7 +44,7 @@ int
 InfoComm::Refresh()
 {
 	/*broadcast since we might add LAN support some day*/
-	int sck = addr_bind_socket_dgram("0.0.0.0", 0, true, true);
+	int sck = addr_bind_socket_dgram_p("0.0.0.0", 0, true, true, NULL, NULL, 0, 0);
 
 	if (sck < 0) {
 		WX("couldn't make socket");

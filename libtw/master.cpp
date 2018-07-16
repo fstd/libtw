@@ -43,7 +43,7 @@ MasterComm::SetMasters(vector<string> const& masters)
 			it != masters.end(); it++) {
 		char host[256];
 		unsigned short port;
-		addr_parse_hostspec(host, sizeof host, &port, it->c_str());
+		addr_parse_hostspec_p(host, sizeof host, &port, it->c_str());
 		msrvs_.insert(pair<char*, unsigned short>(
 				strdup(host), port ? port : 8300));
 	}
@@ -60,7 +60,7 @@ MasterComm::GetList(vector<string> & result)
 	for(set<pair<char*, unsigned short> >::const_iterator
 			it = msrvs_.begin(); it != msrvs_.end(); it++) {
 
-		sck = addr_connect_socket_dgram(it->first, it->second);
+		sck = addr_connect_socket_dgram_p(it->first, it->second, NULL, NULL, 0, 0);
 		if (sck < 0) {
 			WX("could not create socket for '%s:%hu'",
 					it->first, it->second);

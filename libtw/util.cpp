@@ -93,7 +93,8 @@ ssize_t
 Util::Send(int sck, void *buf, size_t len, const char *destaddr)
 {
 		struct sockaddr_storage sa;
-		if (destaddr && !addr_make_sockaddr(destaddr, (sockaddr*)&sa)) {
+		size_t saz = sizeof sa;
+		if (destaddr && !addr_make_sockaddr(destaddr, (sockaddr*)&sa, &saz)) {
 				WX("couldn't make sockaddr for '%s'", destaddr);
 				return -1;
 		}
